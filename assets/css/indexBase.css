@@ -1,0 +1,181 @@
+*,
+*::after,
+*::before
+{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+@font-face {
+  font-family: poppins;
+  src: url('../fonts/Poppins-Medium.ttf');
+}
+html
+{
+    font-family: poppins;
+    font-size: 1.2rem;
+    color: #E5E9F0;
+    letter-spacing: 10%;
+    background-color: #2E3440;
+}
+body
+{
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(24, 1fr);
+    grid-template-rows: repeat(24,1fr);
+    height: 100vh;
+    width: 100vw;
+}
+nav
+{
+    grid-column: 2/24;
+    grid-row: 2;
+    position: relative;
+    display: flex;
+    flex-direction:row;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #E5E9F0;
+    height: 100%;
+    width: 100%;
+    border-radius: 4px; 
+    overflow: hidden; 
+    background: rgba(229, 233, 240, 0.15);  
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+
+    z-index: 999;
+
+}
+#titleBar
+{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    height: 100%;
+    width: 100%;
+}
+#titleBar > img
+{
+    height: 60%;
+    width: auto;
+}
+#titleBar > h1
+{
+    font-size: clamp(8px, 1.2vw, 20px);
+}
+#navButtons
+{
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+#navButtons>button
+{
+    position: relative;
+    height: 100%;
+    width: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: transparent;
+    border: none;
+    transition: transform 0.2s ease;
+    margin-left: clamp(2px, 1vw, 16px);
+    margin-right: clamp(2px, 1vw, 16px);
+}
+#navButtons > button:hover {
+    transform: scale(1.1);
+}
+#navButtons>button>img
+{
+    height: 80%;
+    width: auto;
+}
+.icon {
+    position: absolute;
+    height: 70%;
+    width: auto;
+    transition: opacity 0.2s ease;
+}
+
+.icon.default {
+    opacity: 1;
+}
+
+.icon.hover {
+    opacity: 0;
+}
+
+#navButtons > button:hover .icon.default {
+    opacity: 0;
+}
+
+#navButtons > button:hover .icon.hover {
+    opacity: 1;
+}
+main 
+{
+    grid-column: 1 / -1;
+    grid-row: 1 / -1;
+    position: relative;
+}
+
+main::after 
+{
+    content: "";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+
+    width: 40%;
+    height: 60%;
+
+    background-color: #E5E9F0;
+
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+
+    z-index: 1;
+}
+main::before 
+{
+    content: "";
+    position: absolute;
+    bottom: 0;
+    right: 0;
+
+    width: 40%;
+    height: 60%;
+
+    pointer-events: none;
+
+    clip-path: polygon(100% 0, 100% 100%, 0 100%);
+
+    background: linear-gradient(
+        135deg,
+        rgba(0, 0, 0, 0.25) 0%,
+        rgba(0, 0, 0, 0.15) 20%,
+        rgba(0, 0, 0, 0.05) 35%,
+        rgba(0, 0, 0, 0) 60%
+    );
+
+    z-index: 2;
+}
+main::after,
+main::before
+{
+    pointer-events: none;
+}
