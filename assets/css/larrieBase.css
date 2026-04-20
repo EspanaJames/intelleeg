@@ -1,0 +1,94 @@
+*,
+*::after,
+*::before
+{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+@font-face {
+  font-family: poppins;
+  src: url('../fonts/Poppins-Bold.ttf');
+}
+@font-face {
+  font-family: poppin;
+  src: url('../fonts/Poppins-Regular.ttf');
+}
+html
+{
+    font-family: poppins;
+    font-size: 1.2rem;
+    color: #2E3440;
+    letter-spacing: 10%;
+    background-color: #E8EDF2;
+}
+body
+{
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(48, 1fr);
+    grid-template-rows: repeat(48,1fr);
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    z-index: 0;
+}
+#corner-cut 
+{
+    position: fixed;      
+    top: 0;
+    right: 0;
+    width: 260px;          
+    height: 260px;
+    background: #1F2933;
+    clip-path: polygon(100% 0, 0 0, 100% 100%);
+    z-index: 1000;
+}
+#corner-cut>button>img 
+{
+    position: absolute;
+    top: 20px;     
+    right: 20px;  
+    width: 120px;  
+    transition: 0.2s ease-in;
+}
+#corner-cut>button>img:hover 
+{
+    transform: scale(1.1);
+}
+#titleBar {
+    grid-column: 2 / span 20;
+    grid-row: 3 / 6;
+    display: flex;
+    flex-direction: column;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+#titleBar>h1 
+{
+    font-size: clamp(18px, 3vw, 48px);
+    letter-spacing: clamp(4px, 1vw, 12px);
+    font-family: poppin;
+}
+
+#titleBar>h2 
+{
+    font-size: clamp(8px, 1vw, 16px);
+    letter-spacing: clamp(1px, 0.3vw, 2px);
+    font-family: poppin;
+}
+#titleBar h1,
+#titleBar h2 
+{
+    white-space: nowrap;
+}
+main
+{
+    grid-row: 10/48;
+    grid-column: 2/48;
+    position: relative;
+    height: 100%;
+    width: 100%;
+    border: 1px solid #2E3440;
+    overflow: hidden;
+}

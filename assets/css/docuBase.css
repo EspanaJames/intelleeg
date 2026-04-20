@@ -1,0 +1,35 @@
+*,
+*::after,
+*::before
+{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+@font-face {
+  font-family: poppins;
+  src: url('../fonts/Poppins-Bold.ttf');
+}
+@font-face {
+  font-family: poppin;
+  src: url('../fonts/Poppins-Regular.ttf');
+}
+html
+{
+    font-family: poppins;
+    font-size: 1.2rem;
+    color: #2E3440;
+    letter-spacing: 10%;
+    background-color: #E8EDF2;
+}
+body
+{
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(48, 1fr);
+    grid-template-rows: repeat(48,1fr);
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    z-index: 0;
+}
