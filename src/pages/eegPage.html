@@ -3,9 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <meta name="author" content="James España & Zoe Gerard Brillantes">
+    <title>INTELLEEG</title>
+    <link rel="stylesheet" href="../../assets/css/eegBase.css">
 </head>
 <body>
-    <p>confirmed</p>
+    <div id="backgroundScreen"></div>
+
+    <nav>
+        <div id="userInfo">
+            <img src="../../assets/images/person.png" alt="">
+            <p>Admin User</p>
+        </div>
+        <div id="userOptions">
+            <button id = "settingsButton">
+                <img src="../../assets/images/settings.png" alt="">
+            </button>
+            <button id = "leaveButton" onclick="window.location.href = '../../index.html'" >
+                <img src="../../assets/images/out.png" alt="">
+            </button>
+        </div>
+    </nav>
+    <main>
+        <div id = "dataDisplay">
+        </div>
+        <div id="larrieDisplay">
+        </div>
+    </main>
+    <footer>
+        <div id="startContainer">
+            <button>
+                <img src="../../assets/images/start.png" alt="">
+                <p>START</p>
+            </button>
+        </div>
+        <div>
+            <p id = "footerActionDescription">
+                Welcome to the White Room!
+            </p>
+        </div>
+        <div id = "selectionTools">
+            <button><img src="../../assets/images/eegWhite.png" alt=""></button>
+            <button><img src="../../assets/images/train.png" alt=""></button>
+            <button><img src="../../assets/images/connect.png" alt=""></button>
+        </div>
+    </footer>
 </body>
 </html>

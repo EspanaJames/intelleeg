@@ -1,0 +1,223 @@
+*,
+*::after,
+*::before
+{
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+@font-face {
+  font-family: poppins;
+  src: url('../fonts/Poppins-Medium.ttf');
+}
+html
+{
+    font-family: poppins;
+    font-size: 1.2rem;
+    color: #E5E9F0;
+    letter-spacing: 10%;
+}
+body
+{
+    grid-template-columns: repeat(48, 1fr);
+    grid-template-rows: repeat(48, 1fr);
+    display: grid;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+
+    background-color: #2b5dbf;
+    z-index: 0;
+}
+#backgroundScreen
+{
+    grid-row: 1/span 48;
+    grid-column: 1/span 48;
+    height: 100%;
+    width: 100%;
+    background-color: #D8DEE9;
+    z-index: 5;
+}
+nav
+{
+    grid-row: 4/span 2;
+    grid-column: 2/span 16;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #2E3440;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-radius: 6px;
+    z-index: 100;
+}
+#userInfo
+{
+    height: 100%;
+    width: auto;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    gap:5px;
+}
+#userInfo > img {
+    height: clamp(12px, 2vw, 24px);
+    width: auto;
+}
+#userInfo>p {
+     margin: 0;
+     font-size: clamp(6px, 0.8vw, 24px);
+     letter-spacing: 2px;
+}
+#userOptions
+{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap:10px;
+    align-items: center;
+    justify-content: center;
+}
+#userOptions>button
+{
+    height: 100%;
+    width: auto;
+    background-color: transparent;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 1;
+    transition:  transform 0.3s ease;
+}
+#userOptions>button:hover
+{
+    transform: scale(1.1);
+}
+#userOptions > button > img {
+    height: clamp(12px, 2vw, 24px);
+    width: auto;
+}
+main
+{
+    grid-row: 7/span 36;
+    grid-column: 2/span 46;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    z-index: 10;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 3%;
+}
+#dataDisplay
+{
+    position: relative;
+    height: 90%;
+    width: 30%;
+
+    background-color: #2E3440;
+
+    border-radius: 8px;
+
+    border: 1px solid #2E3440;
+
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.45),
+        inset 0 1px 1px rgba(255, 255, 255, 0.04);
+}
+#larrieDisplay
+{
+    position:relative;
+    height: 100%;
+    width: 65%;
+    align-self: flex-start;
+    border: 1px solid #2E3440;
+}
+footer
+{
+    grid-row: 44/span 2;
+    grid-column: 8/span 34;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    z-index:50;
+    height: 100%;
+    width: 100%;
+    border: 1px solid #D8DEE9;
+    background-color: #2E3440;
+    border-radius: 5px;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+#startContainer>button
+{
+    height: 100%;
+    width: auto;
+    display: flex;
+    background-color: transparent;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    color: #D8DEE9;
+    font-weight: 800;
+    letter-spacing: 2px;
+    font-family: poppins;
+    transition: transform 0.2s ease;
+    gap: 5px;
+}
+#startContainer>button>img
+{
+    height:  clamp(12px, 2vw, 24px);
+    width: auto;
+}
+#startContainer>button:hover
+{
+    transform: scale(1.1);
+}
+#footerActionDescription
+{
+    font-size: clamp(4px, 0.6vw, 20px);
+}
+#selectionTools
+{
+    height: 100%;
+    width: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+#selectionTools>button
+{
+    height: 100%;
+    width: auto;
+    display: flex;
+    background-color: transparent;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    transition: transform 0.2s ease;
+}
+#selectionTools>button>img
+{
+   height:  clamp(12px, 2vw, 24px);;
+   width: auto;
+}
+#selectionTools>button:hover
+{
+    transform: scale(1.1);
+}

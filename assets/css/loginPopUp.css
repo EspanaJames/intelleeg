@@ -1,10 +1,17 @@
+@font-face {
+  font-family: poppinItalic;
+  src: url('../fonts/Poppins-Regular.ttf');
+}
+
 .overlay {
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0,0,0,0.35);
+    backdrop-filter: blur(3px);
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 20px;
 }
 
 .hidden {
@@ -12,22 +19,167 @@
 }
 
 .loginBox {
-    background: white;
-    padding: 20px;
-    border-radius: 12px;
-    width: 300px;
+    position: relative;
+    background: #E5E9F0;
+    padding: 5vw;
+    padding-top: 7vw;
+    border-radius: 18px;
+    width: min(90vw, 330px);
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 5vw;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.18);
 }
 
-.loginBox input {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
+.close-btn {
+    position: absolute;
+    right: 4vw;
+    top: 4vw;
+    width: 3.2vw;
+    height: 3.2vw;
+    max-width: 14px;
+    max-height: 14px;
+    cursor: pointer;
+    opacity: 0.7;
+    display: inline-block;
+    transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
-.buttons {
-    display: flex;
-    justify-content: space-between;
+.close-btn:hover {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+.login-logo {
+    width: 22vw;
+    max-width: 90px;
+    margin: 0 auto 1vw auto;
+    display: block;
+    opacity: 0.9;
+}
+
+.login-header {
+    text-align: center;
+}
+
+.login-header h2 {
+    font-size: 4.5vw;
+    max-font-size: 20px;
+    letter-spacing: 2px;
+    color: #3B4252;
+    margin-top: 1vw;
+}
+
+.input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding: 4vw 10vw 2vw 10vw;
+    border: none;
+    border-bottom: 1px solid #4C566A;
+    background: transparent;
+    font-size: 3.5vw;
+    max-font-size: 0.9rem;
+    outline: none;
+    color: #2E3440;
+}
+
+.field-icon {
+    position: absolute;
+    left: 3vw;
+    top: 3.5vw;
+    width: 4vw;
+    max-width: 18px;
+    opacity: 0.8;
+}
+
+.toggle-eye {
+    position: absolute;
+    right: 3vw;
+    top: 3.5vw;
+    width: 5vw;
+    max-width: 20px;
+    cursor: pointer;
+    opacity: 0.8;
+    display: inline-block;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.toggle-eye:hover {
+    opacity: 1;
+    transform: scale(1.15);
+}
+
+.floating-label {
+    position: absolute;
+    left: 10vw;
+    top: 3.5vw;
+    font-size: 2.8vw;
+    max-font-size: 0.75rem;
+    letter-spacing: 1px;
+    color: #4C566A;
+    pointer-events: none;
+    transition: 0.2s ease;
+    opacity: 0.7;
+}
+
+.input-wrapper input:focus + .floating-label,
+.input-wrapper input:not(:placeholder-shown) + .floating-label {
+    opacity: 0;
+}
+
+.login-submit {
+    align-self: flex-end;
+    background: none;
+    border: none;
+    color: #3B4252;
+    font-family: poppinItalic;
+    font-size: 2.8vw;
+    max-font-size: 0.7rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    padding: 0;
+    margin-top: 1vw;
+    transition: transform 0.25s ease;
+}
+
+.login-submit:hover {
+    transform: scale(1.1);
+}
+
+@media (min-width: 500px) {
+    .loginBox {
+        padding: 35px 40px;
+        gap: 22px;
+    }
+    .close-btn {
+        right: 16px;
+        top: 16px;
+    }
+    .login-header h2 {
+        font-size: 20px;
+    }
+    .input-wrapper input {
+        font-size: 0.9rem;
+        padding: 14px 40px 6px 40px;
+    }
+    .field-icon {
+        left: 10px;
+        top: 14px;
+    }
+    .toggle-eye {
+        right: 10px;
+        top: 14px;
+    }
+    .floating-label {
+        font-size: 0.75rem;
+        left: 40px;
+        top: 14px;
+    }
+    .login-submit {
+        font-size: 0.7rem;
+    }
 }
