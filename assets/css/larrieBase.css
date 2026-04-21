@@ -14,6 +14,10 @@
   font-family: poppin;
   src: url('../fonts/Poppins-Regular.ttf');
 }
+@font-face {
+  font-family: poppinItalic;
+  src: url('../fonts/Poppins-ThinItalic.ttf');
+}
 html
 {
     font-family: poppins;
@@ -66,7 +70,7 @@ body
 }
 #titleBar>h1 
 {
-    font-size: clamp(18px, 3vw, 48px);
+    font-size: clamp(18px, 2vw, 48px);
     letter-spacing: clamp(4px, 1vw, 12px);
     font-family: poppin;
 }
@@ -87,8 +91,244 @@ main
     grid-row: 10/48;
     grid-column: 2/48;
     position: relative;
+    display: grid;
+    grid-template-columns: repeat(48,1fr);
+    grid-template-rows: repeat(48,1fr);
     height: 100%;
     width: 100%;
-    border: 1px solid #2E3440;
     overflow: hidden;
+}
+#larrieDescriptor
+{
+    grid-column: 2/span 16;
+    grid-row: 10/span 24;
+    height: 100%;
+    width: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+}
+#larrieDescriptor>h3
+{
+    font-size: clamp(8px, 0.8vw, 16px);
+    letter-spacing: clamp(1px, 0.3vw, 2px);
+    font-family: poppin;
+    text-align: justify;   
+    text-justify: inter-word; 
+    text-indent: 2rem;
+}
+#larrieDescriptor h3 strong {
+    font-family: poppins; 
+    font-weight: bold;
+    font-size: clamp(8px, 1vw, 16px);
+}
+#larrieHolder
+{
+    grid-column: 19 /span 29;
+    grid-row: 2/span 42;
+    height: 100%;
+    width: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+}
+#larrieQuote
+{
+    grid-column: 4/span 42;
+    grid-row: 46/span 2;
+    height: 100%;
+    width: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#larrieQuote > h4 {
+    font-size: clamp(8px, 1vw, 16px);
+    letter-spacing: clamp(1px, 0.3vw, 2px);
+    font-family: poppinItalic;
+}
+.backgroundBlobs {
+    position: absolute;
+    width: clamp(150px, 30vw, 600px);
+    height: clamp(150px, 30vw, 600px);
+}
+
+/* =========================
+   BASE BLOB STYLE
+========================= */
+.blob {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+
+    /* sharper (less foggy) */
+    filter: blur(3px);
+    opacity: 0.92;
+
+    /* subtle structure so it doesn't look like smoke */
+    border: 1px solid rgba(255,255,255,0.08);
+
+    /* lighting / depth */
+    background: radial-gradient(
+        circle at 30% 30%,
+        rgba(255,255,255,0.14),
+        transparent 60%
+    ),
+    rgba(40, 45, 55, 0.7);
+
+    box-shadow:
+        inset 0 0 25px rgba(255,255,255,0.08),
+        0 20px 50px rgba(0,0,0,0.35);
+
+    mix-blend-mode: screen;
+}
+
+/* =========================
+   BLOB 1 (MAIN MASS)
+========================= */
+.blob1 {
+    background: radial-gradient(
+        circle at 30% 30%,
+        rgba(255,255,255,0.18),
+        transparent 60%
+    ),
+    rgba(40, 45, 55, 0.75);
+
+    transform: translate(-10%, -8%);
+    animation:
+        morph1 14s infinite ease-in-out alternate,
+        stretch1 10s infinite ease-in-out alternate,
+        rotate1 20s infinite ease-in-out alternate;
+}
+
+/* =========================
+   BLOB 2 (MID LAYER)
+========================= */
+.blob2 {
+    width: 85%;
+    height: 85%;
+
+    background: radial-gradient(
+        circle at 35% 40%,
+        rgba(255,255,255,0.12),
+        transparent 65%
+    ),
+    rgba(70, 75, 90, 0.6);
+
+    transform: translate(12%, 8%);
+    animation:
+        morph2 18s infinite ease-in-out alternate,
+        stretch2 12s infinite ease-in-out alternate,
+        rotate2 25s infinite ease-in-out alternate;
+}
+
+/* =========================
+   BLOB 3 (INNER CORE)
+========================= */
+.blob3 {
+    width: 70%;
+    height: 70%;
+
+    background: radial-gradient(
+        circle at 40% 35%,
+        rgba(255,255,255,0.1),
+        transparent 70%
+    ),
+    rgba(100, 105, 120, 0.5);
+
+    transform: translate(-6%, 18%);
+    animation:
+        morph3 22s infinite ease-in-out alternate,
+        stretch3 14s infinite ease-in-out alternate,
+        rotate3 30s infinite ease-in-out alternate;
+}
+
+/* =========================
+   MORPH ANIMATIONS (IRREGULAR)
+========================= */
+@keyframes morph1 {
+    0% {
+        border-radius: 60% 40% 55% 45% / 45% 55% 35% 65%;
+    }
+    25% {
+        border-radius: 30% 70% 40% 60% / 60% 30% 70% 40%;
+    }
+    50% {
+        border-radius: 80% 20% 60% 40% / 30% 70% 30% 70%;
+    }
+    75% {
+        border-radius: 20% 80% 30% 70% / 70% 40% 60% 30%;
+    }
+    100% {
+        border-radius: 50% 50% 20% 80% / 60% 30% 70% 40%;
+    }
+}
+
+@keyframes morph2 {
+    0% {
+        border-radius: 50% 70% 30% 60% / 60% 40% 70% 30%;
+    }
+    50% {
+        border-radius: 70% 30% 60% 40% / 30% 70% 40% 60%;
+    }
+    100% {
+        border-radius: 40% 60% 20% 80% / 70% 30% 60% 40%;
+    }
+}
+
+@keyframes morph3 {
+    0% {
+        border-radius: 60% 40% 70% 30% / 50% 60% 40% 70%;
+    }
+    50% {
+        border-radius: 30% 70% 40% 60% / 70% 40% 60% 30%;
+    }
+    100% {
+        border-radius: 70% 30% 50% 50% / 40% 60% 30% 70%;
+    }
+}
+
+/* =========================
+   STRETCH EFFECTS
+========================= */
+@keyframes stretch1 {
+    0%   { transform: translate(-10%, -8%) scale(1,1); }
+    50%  { transform: translate(-12%, -6%) scale(1.15, 0.9); }
+    100% { transform: translate(-5%, -3%) scale(0.95, 1.1); }
+}
+
+@keyframes stretch2 {
+    0%   { transform: translate(12%, 8%) scale(1,1); }
+    50%  { transform: translate(10%, 6%) scale(1.1, 0.85); }
+    100% { transform: translate(6%, 2%) scale(0.9, 1.15); }
+}
+
+@keyframes stretch3 {
+    0%   { transform: translate(-6%, 18%) scale(1,1); }
+    50%  { transform: translate(-4%, 14%) scale(1.2, 0.9); }
+    100% { transform: translate(-2%, 10%) scale(0.85, 1.2); }
+}
+
+/* =========================
+   SLOW ROTATION (ADDS LIFE)
+========================= */
+@keyframes rotate1 {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(12deg); }
+}
+
+@keyframes rotate2 {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(-10deg); }
+}
+
+@keyframes rotate3 {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(8deg); }
 }
