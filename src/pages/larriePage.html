@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.129.0/build/three.module.js"
+  }
+}
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="James España & Zoe Gerard Brillantes">
@@ -30,9 +37,8 @@
                 <div class="blob blob2"></div>
                 <div class="blob blob3"></div>
             </div>
-            <div>
-                <!--put larrie here-->
-            </div>
+            
+            <div id="larrieCanvas"> </div>
         </div>
         <div id="larrieQuote">
             <h4>
@@ -41,4 +47,5 @@
         </div>
     </main>
 </body>
+<script type="module" src="../functions/larrieFunctions/main.js"></script>
 </html>
