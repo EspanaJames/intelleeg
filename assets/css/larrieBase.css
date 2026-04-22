@@ -214,9 +214,6 @@ main
         rotate1 20s infinite ease-in-out alternate;
 }
 
-/* =========================
-   BLOB 2 (MID LAYER)
-========================= */
 .blob2 {
     width: 85%;
     height: 85%;
@@ -235,9 +232,6 @@ main
         rotate2 25s infinite ease-in-out alternate;
 }
 
-/* =========================
-   BLOB 3 (INNER CORE)
-========================= */
 .blob3 {
     width: 70%;
     height: 70%;
@@ -256,9 +250,6 @@ main
         rotate3 30s infinite ease-in-out alternate;
 }
 
-/* =========================
-   MORPH ANIMATIONS (IRREGULAR)
-========================= */
 @keyframes morph1 {
     0% {
         border-radius: 60% 40% 55% 45% / 45% 55% 35% 65%;
@@ -301,9 +292,6 @@ main
     }
 }
 
-/* =========================
-   STRETCH EFFECTS
-========================= */
 @keyframes stretch1 {
     0%   { transform: translate(-10%, -8%) scale(1,1); }
     50%  { transform: translate(-12%, -6%) scale(1.15, 0.9); }
@@ -322,9 +310,6 @@ main
     100% { transform: translate(-2%, 10%) scale(0.85, 1.2); }
 }
 
-/* =========================
-   SLOW ROTATION (ADDS LIFE)
-========================= */
 @keyframes rotate1 {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(12deg); }
