@@ -52,6 +52,7 @@ nav
     padding-right: 10px;
     border-radius: 6px;
     z-index: 100;
+    user-select: none;
 }
 #userInfo
 {
@@ -81,6 +82,7 @@ nav
     gap:10px;
     align-items: center;
     justify-content: center;
+    font-family: poppins;
 }
 #userOptions>button
 {
@@ -115,8 +117,9 @@ main
     align-items: center;
     justify-content: space-between;
     padding-left: 3%;
+    user-select: none;
 }
-#dataDisplay
+/* #dataDisplay
 {
     position: relative;
     height: 90%;
@@ -131,7 +134,56 @@ main
     box-shadow: 
         0 10px 30px rgba(0, 0, 0, 0.45),
         inset 0 1px 1px rgba(255, 255, 255, 0.04);
+} */
+
+#dataDisplay {
+    position: relative;
+    height: 90%;
+    width: 30%;
+
+    background-color: #2E3440;
+
+    border-radius: 8px;
+    border: 1px solid #2E3440;
+
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.45),
+        inset 0 1px 1px rgba(255, 255, 255, 0.04);
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    box-sizing: border-box;
 }
+
+.graphBox {
+    width: 100%;
+    height: 250px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.graphBox h3 {
+    margin: 0 0 8px 0;
+    color: white;
+    font-size: 16px;
+}
+
+.graphBox canvas {
+    width: 100% !important;
+    height: 180px !important;
+}
+
+#eegValues {
+    color: white;
+    display: flex;
+    gap: 20px;
+    font-size: 14px;
+}
+
 #larrieDisplay
 {
     position:relative;
@@ -139,6 +191,7 @@ main
     width: 65%;
     align-self: flex-start;
     border: 1px solid #2E3440;
+    user-select: none;
 }
 footer
 {
@@ -157,6 +210,7 @@ footer
     justify-content: space-between;
     padding-left: 10px;
     padding-right: 10px;
+    user-select:none;
 }
 #startContainer>button
 {

@@ -2,7 +2,7 @@ export function initSelectionTools() {
     const buttons = document.querySelectorAll("#selectionTools button");
 
     let activeButton = null;
-
+    
     buttons.forEach((button, index) => {
         button.addEventListener("click", () => {
             if (activeButton) {

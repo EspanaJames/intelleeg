@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://unpkg.com/three@0.129.0/build/three.module.js"
+  }
+}
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="author" content="James España & Zoe Gerard Brillantes">
@@ -25,14 +32,28 @@
         </div>
     </nav>
     <main>
-        <div id = "dataDisplay">
+        <div id="dataDisplay">
+            <div class="graphBox">
+                <h3>C3 Channel</h3>
+                <canvas id="c4Chart"></canvas>
+            </div>
+
+            <div class="graphBox">
+                <h3>Cz Channel</h3>
+                <canvas id="czChart"></canvas>
+            </div>
+
+            <div id="eegValues">
+                <p>C3: <span id="c4Value">--</span></p>
+                <p>Cz: <span id="czValue">--</span></p>
+            </div>
         </div>
         <div id="larrieDisplay">
         </div>
     </main>
     <footer>
         <div id="startContainer">
-            <button>
+            <button id="startBtn">
                 <img src="../../assets/images/start.png" alt="">
                 <p>START</p>
             </button>
@@ -43,11 +64,13 @@
             </p>
         </div>
         <div id = "selectionTools">
-            <button><img src="../../assets/images/eegWhite.png" alt=""></button>
-            <button><img src="../../assets/images/train.png" alt=""></button>
-            <button><img src="../../assets/images/connect.png" alt=""></button>
+            <button id="calibrateBtn"><img src="../../assets/images/eegWhite.png" alt=""></button>
+            <button id="trainBtn"><img src="../../assets/images/train.png" alt=""></button>
+            <button id="connectBtn"><img src="../../assets/images/connect.png" alt=""></button>
         </div>
     </footer>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module" src="../functions/eegPageFunctions/main.js"></script>
+    <script type="module" src="../functions/larrieMovingFunctions/main.js"></script>
 </body>
 </html>
