@@ -1,19 +1,36 @@
 import * as THREE from "three";
-import { OrbitControls } from "https://unpkg.com/three@0.129.0/examples/jsm/controls/OrbitControls.js";
-import { GLTFLoader } from "https://unpkg.com/three@0.129.0/examples/jsm/loaders/GLTFLoader.js";
+import { OrbitControls } from "/src/functions/larrieMovingFunctions/OrbitControls.js";
+import { GLTFLoader } from "/src/functions/larrieMovingFunctions/GLTFLoader.js";
 
 let mixer = null;
 let clipsByName = {};
 let activeAction = null;
 let activeClipName = null;
-let activeForward = true;
 
-export function playClipByName(clipName) {
-  if (!mixer) return;
+let currentMovementLabel = "rest";
+let pendingMovementLabel = null;
+let isTransitioning = false;
+
+// Match these with your console available clips:
+// ['arm', 'elbow_raised', 'forwardUpShoulder', 'hand_clench', 'Rest', 'sideArm', 'TherealRest']
+const MOVEMENT_CLIPS = {
+  rest: "TherealRest",
+  hand_clench: "hand_clench",
+  arm_raised: "arm_raised",
+  elbow_raised: "elbow_raised"
+};
+
+export function playClipByName(clipName, direction = "forward", onFinished = null) {
+  if (!mixer) {
+    console.warn("Mixer not ready.");
+    return;
+  }
 
   const clip = clipsByName[clipName];
+
   if (!clip) {
     console.warn(`Clip "${clipName}" not found.`);
+    console.log("Available clips:", Object.keys(clipsByName));
     return;
   }
 
@@ -22,17 +39,93 @@ export function playClipByName(clipName) {
   }
 
   const action = mixer.clipAction(clip);
+  action.reset();
+  action.enabled = true;
   action.clampWhenFinished = true;
   action.loop = THREE.LoopOnce;
-  action.enabled = true;
-  action.timeScale = 1;
-  action.time = 0;
-  action.reset();
+
+  if (direction === "reverse") {
+    action.timeScale = -1;
+    action.time = clip.duration;
+  } else {
+    action.timeScale = 1;
+    action.time = 0;
+  }
+
+  if (onFinished) {
+    const finishedHandler = (event) => {
+      if (event.action === action) {
+        mixer.removeEventListener("finished", finishedHandler);
+        onFinished();
+      }
+    };
+
+    mixer.addEventListener("finished", finishedHandler);
+  }
+
   action.play();
 
   activeAction = action;
   activeClipName = clipName;
-  activeForward = false;
+}
+
+export function playEEGMovement(label) {
+  if (!MOVEMENT_CLIPS[label]) {
+    label = "rest";
+  }
+
+  if (label === currentMovementLabel) {
+    return;
+  }
+
+  if (isTransitioning) {
+    pendingMovementLabel = label;
+    return;
+  }
+
+  const previousLabel = currentMovementLabel;
+  const previousClip = MOVEMENT_CLIPS[previousLabel];
+  const nextClip = MOVEMENT_CLIPS[label];
+
+  isTransitioning = true;
+
+  // If already resting, play next directly
+  if (previousLabel === "rest") {
+    playClipByName(nextClip, "forward", () => {
+      currentMovementLabel = label;
+      isTransitioning = false;
+      runPendingMovement();
+    });
+    return;
+  }
+
+  // Reverse current first
+  playClipByName(previousClip, "reverse", () => {
+    currentMovementLabel = "rest";
+
+    if (label === "rest") {
+      isTransitioning = false;
+      runPendingMovement();
+      return;
+    }
+
+    // Then play next
+    playClipByName(nextClip, "forward", () => {
+      currentMovementLabel = label;
+      isTransitioning = false;
+      runPendingMovement();
+    });
+  });
+}
+
+function runPendingMovement() {
+  if (pendingMovementLabel && pendingMovementLabel !== currentMovementLabel) {
+    const next = pendingMovementLabel;
+    pendingMovementLabel = null;
+    playEEGMovement(next);
+  } else {
+    pendingMovementLabel = null;
+  }
 }
 
 export function initMovingLarrie() {
@@ -69,8 +162,7 @@ export function initMovingLarrie() {
   controls.enableDamping = true;
   controls.dampingFactor = 0.05;
 
-  const ambientLight = new THREE.AmbientLight(0xffffff, 1.5);
-  scene.add(ambientLight);
+  scene.add(new THREE.AmbientLight(0xffffff, 1.5));
 
   const dirLight = new THREE.DirectionalLight(0xffffff, 2);
   dirLight.position.set(5, 10, 5);
@@ -95,7 +187,7 @@ export function initMovingLarrie() {
 
       object.position.x -= center.x;
       object.position.z -= center.z;
-      object.position.y -= (center.y - size.y / 2);
+      object.position.y -= center.y - size.y / 2;
 
       const maxDim = Math.max(size.x, size.y, size.z);
       const scale = 3 / maxDim;
@@ -115,8 +207,6 @@ export function initMovingLarrie() {
       controls.maxDistance = newMaxDim * 2.0;
       controls.update();
 
-      console.log("Animations found:", gltf.animations);
-
       mixer = new THREE.AnimationMixer(object);
 
       gltf.animations.forEach((clip) => {
@@ -124,21 +214,17 @@ export function initMovingLarrie() {
         console.log("Clip name:", clip.name);
       });
 
-      // Start with TherealRest immediately
-      if (clipsByName["TherealRest"]) {
-        const startAction = mixer.clipAction(clipsByName["TherealRest"]);
-        startAction.clampWhenFinished = true;
-        startAction.loop = THREE.LoopOnce;
-        startAction.timeScale = 1;
-        startAction.reset();
-        startAction.play();
+      console.log("Available clips:", Object.keys(clipsByName));
 
-        activeAction = startAction;
-        activeClipName = "TherealRest";
-        activeForward = true;
-      } else {
-        console.warn('Clip "TherealRest" not found.');
-      }
+      setTimeout(() => {
+        if (clipsByName["TherealRest"]) {
+          playClipByName("TherealRest", "forward");
+          currentMovementLabel = "rest";
+        } else if (clipsByName["Rest"]) {
+          playClipByName("Rest", "forward");
+          currentMovementLabel = "rest";
+        }
+      }, 300);
     },
     undefined,
     (error) => {
@@ -146,78 +232,35 @@ export function initMovingLarrie() {
     }
   );
 
-  function playClipToggle(clipName) {
-    if (!mixer) {
-      console.warn("Mixer not ready yet.");
-      return;
-    }
-
-    const clip = clipsByName[clipName];
-    if (!clip) {
-      console.warn(`Clip "${clipName}" not found.`);
-      console.log("Available clips:", Object.keys(clipsByName));
-      return;
-    }
-
-    // If switching to a different clip, always start forward first
-    if (activeClipName !== clipName) {
-      if (activeAction) {
-        activeAction.stop();
-      }
-
-      activeAction = mixer.clipAction(clip);
-      activeAction.clampWhenFinished = true;
-      activeAction.loop = THREE.LoopOnce;
-      activeAction.enabled = true;
-      activeAction.timeScale = 1;
-      activeAction.time = 0;
-      activeAction.reset();
-      activeAction.play();
-
-      activeClipName = clipName;
-      activeForward = false; // next press on same key will reverse
-      return;
-    }
-
-    // Same clip pressed again -> reverse
-    if (activeAction) {
-      activeAction.stop();
-    }
-
-    activeAction = mixer.clipAction(clip);
-    activeAction.clampWhenFinished = true;
-    activeAction.loop = THREE.LoopOnce;
-    activeAction.enabled = true;
-
-    if (activeForward) {
-      activeAction.timeScale = 1;
-      activeAction.time = 0;
-    } else {
-      activeAction.timeScale = -1;
-      activeAction.time = clip.duration;
-    }
-
-    activeAction.play();
-    activeForward = !activeForward;
-  }
-
+  // Manual keyboard controls
   window.addEventListener("keydown", (event) => {
     const key = event.key.toLowerCase();
 
     if (key === "1") {
-      playClipToggle("Rest");
+      playEEGMovement("hand_clench");
     } else if (key === "2") {
-      playClipToggle("elbowUp");
+      playEEGMovement("elbow_raised");
     } else if (key === "3") {
-      playClipToggle("forwardUpShoulder");
+      playEEGMovement("arm_raised");
+    } else if (key === "4") {
+      playEEGMovement("rest");
     }
   });
+
+  // Manual button controls
+  window.manualHand = () => playEEGMovement("hand_clench");
+  window.manualElbow = () => playEEGMovement("elbow_raised");
+  window.manualArm = () => playEEGMovement("arm_raised");
+  window.manualRest = () => playEEGMovement("rest");
 
   function animate() {
     requestAnimationFrame(animate);
 
     const delta = clock.getDelta();
-    if (mixer) mixer.update(delta);
+
+    if (mixer) {
+      mixer.update(delta);
+    }
 
     controls.update();
     renderer.render(scene, camera);
