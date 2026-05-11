@@ -31,7 +31,7 @@ export function createLoginModal() {
 
     const username = document.createElement("input");
     username.type = "text";
-    username.placeholder = " ";
+    username.placeholder = "";
 
     const userLabel = document.createElement("label");
     userLabel.className = "floating-label";

@@ -11,24 +11,28 @@ const trainBtn = document.getElementById("trainBtn");
 const connectBtn = document.getElementById("connectBtn");
 const footerActionDescription = document.getElementById("footerActionDescription");
 
-const c4Value = document.getElementById("c4Value");
+const c3Value = document.getElementById("c3Value");
 const czValue = document.getElementById("czValue");
 
-const c4Canvas = document.getElementById("c4Chart");
+const c3Canvas = document.getElementById("c3Chart");
 const czCanvas = document.getElementById("czChart");
 
 let eegSocket = null;
-let c4Chart = null;
+let c3Chart = null;
 let czChart = null;
 
 let isRunning = false;
 let isConnected = false;
 let lastPredictionLabel = null;
 
+let currentLarrieLabel = "rest";
+let lastMovementTime = 0;
+const MOVEMENT_COOLDOWN = 1200; // milliseconds
+
 function createCharts() {
     const labels = Array.from({ length: 100 }, (_, i) => i);
 
-    c4Chart = new Chart(c4Canvas.getContext("2d"), {
+    c3Chart = new Chart(c3Canvas.getContext("2d"), {
         type: "line",
         data: {
             labels: [...labels],
@@ -98,7 +102,7 @@ function createCharts() {
 }
 
 function ensureCharts() {
-    if (!c4Chart || !czChart) {
+    if (!c3Chart || !czChart) {
         createCharts();
     }
 }
@@ -133,16 +137,16 @@ function connectEEGSocket() {
         }
 
         const sample = data.sample || {};
-        const c4 = Number(sample.c4 || 0);
+        const c3 = Number(sample.c3 || 0);
         const cz = Number(sample.cz || 0);
 
-        c4Value.textContent = c4.toFixed(6);
+        c3Value.textContent = c3.toFixed(6);
         czValue.textContent = cz.toFixed(6);
 
-        if (c4Chart && czChart) {
-            c4Chart.data.datasets[0].data.push(c4);
-            c4Chart.data.datasets[0].data.shift();
-            c4Chart.update("none");
+        if (c3Chart && czChart) {
+            c3Chart.data.datasets[0].data.push(c3);
+            c3Chart.data.datasets[0].data.shift();
+            c3Chart.update("none");
 
             czChart.data.datasets[0].data.push(cz);
             czChart.data.datasets[0].data.shift();
@@ -156,8 +160,17 @@ function connectEEGSocket() {
         footerActionDescription.textContent =
             `Prediction: ${label} | Confidence: ${confidence.toFixed(2)}`;
 
-        if (label !== lastPredictionLabel) {
+        const now = Date.now();
+
+        if (
+            prediction.ready === true &&
+            label !== currentLarrieLabel &&
+            now - lastMovementTime > MOVEMENT_COOLDOWN
+        ) {
+            currentLarrieLabel = label;
             lastPredictionLabel = label;
+            lastMovementTime = now;
+
             playEEGMovement(label);
         }
     };
@@ -188,6 +201,8 @@ function stopEEGOnly() {
     }
 
     lastPredictionLabel = null;
+    currentLarrieLabel = "rest";
+    lastMovementTime = 0;
 }
 
 function resetEEGSystem() {
@@ -195,14 +210,14 @@ function resetEEGSystem() {
 
     stopEEGOnly();
 
-    if (c4Chart && czChart) {
-        c4Chart.data.datasets[0].data = new Array(100).fill(0);
+    if (c3Chart && czChart) {
+        c3Chart.data.datasets[0].data = new Array(100).fill(0);
         czChart.data.datasets[0].data = new Array(100).fill(0);
-        c4Chart.update();
+        c3Chart.update();
         czChart.update();
     }
 
-    if (c4Value) c4Value.textContent = "--";
+    if (c3Value) c3Value.textContent = "--";
     if (czValue) czValue.textContent = "--";
 }
 
@@ -280,6 +295,15 @@ function delay(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+let currentTrainingLabelIndex = 0;
+
+const labels = [
+    "rest",
+    "hand_clench",
+    "arm_raised",
+    "elbow_raised"
+];
+
 trainBtn.addEventListener("click", async (event) => {
     event.preventDefault();
 
@@ -292,85 +316,99 @@ trainBtn.addEventListener("click", async (event) => {
             return;
         }
 
-        const labels = [
-            "rest",
-            "hand_clench",
-            "arm_raised",
-            "elbow_raised"
-        ];
+        const label = labels[currentTrainingLabelIndex];
 
-        for (const label of labels) {
-            console.log("STARTING LABEL:", label);
+        footerActionDescription.textContent =
+            `Prepare: ${label} in 3 seconds...`;
 
+        await delay(3000);
+
+        footerActionDescription.textContent =
+            `Recording preview for ${label}...`;
+
+        await fetch(
+            `http://127.0.0.1:8000/record/start?label=${label}`,
+            { method: "POST" }
+        );
+
+        await delay(10000); // preview duration first; change to 30000 or 120000 later
+
+        const stopRes = await fetch(
+            "http://127.0.0.1:8000/record/stop",
+            { method: "POST" }
+        );
+
+        const stopData = await stopRes.json();
+        console.log("Preview:", stopData);
+
+        if (!stopData.ok) {
             footerActionDescription.textContent =
-                `Prepare: ${label} in 3 seconds...`;
-
-            await delay(3000);
-
-            footerActionDescription.textContent =
-                `Recording ${label} for 10 seconds...`;
-
-            const startRes = await fetch(
-                `http://127.0.0.1:8000/record/start?label=${label}`,
-                { method: "POST" }
-            );
-
-            const startData = await startRes.json();
-            console.log("START RESPONSE:", label, startData);
-
-            await delay(10000);
-
-            const stopRes = await fetch(
-                "http://127.0.0.1:8000/record/stop",
-                { method: "POST" }
-            );
-
-            const stopData = await stopRes.json();
-            console.log("STOP RESPONSE:", label, stopData);
-
-            if (!stopData.ok) {
-                footerActionDescription.textContent =
-                    `Failed saving ${label}: ${stopData.message}`;
-                return;
-            }
-
-            footerActionDescription.textContent = `Saved ${label}`;
-            await delay(1000);
+                `Preview failed: ${stopData.message}`;
+            return;
         }
 
-        footerActionDescription.textContent = "Training model...";
-
-        const trainRes = await fetch("http://127.0.0.1:8000/train", {
-            method: "POST"
-        });
-
-        const trainData = await trainRes.json();
-        console.log("TRAIN RESPONSE:", trainData);
-
-        if (trainData.ok) {
-            footerActionDescription.textContent =
-                `Training done | Accuracy: ${(trainData.accuracy * 100).toFixed(2)}%`;
-        } else {
-            footerActionDescription.textContent =
-                `Training failed: ${trainData.message}`;
-        }
+        footerActionDescription.textContent =
+            `Preview ready for ${label}. Click Calibrate to save, or Train to retry.`;
 
     } catch (error) {
-        console.error("Training sequence error:", error);
-        footerActionDescription.textContent =
-            "Training sequence failed. Check console.";
+        console.error(error);
+        footerActionDescription.textContent = "Training preview failed.";
     } finally {
         isTraining = false;
     }
 });
 
-calibrateBtn.addEventListener("click", () => {
+calibrateBtn.addEventListener("click", async () => {
     console.log("Calibrate button clicked");
 
-    isRunning = false;
-    setStartButtonUI(false);
-    resetEEGSystem();
+    try {
+        const commitRes = await fetch(
+            "http://127.0.0.1:8000/record/commit",
+            { method: "POST" }
+        );
 
-    footerActionDescription.textContent = "Calibrating...";
+        const commitData = await commitRes.json();
+        console.log("COMMIT:", commitData);
+
+        if (!commitData.ok) {
+            footerActionDescription.textContent =
+                `Save failed: ${commitData.message}`;
+            return;
+        }
+
+        footerActionDescription.textContent =
+            `Saved ${commitData.label}.`;
+
+        currentTrainingLabelIndex++;
+
+        if (currentTrainingLabelIndex >= labels.length) {
+            footerActionDescription.textContent =
+                "All labels saved. Training model...";
+
+            const trainRes = await fetch("http://127.0.0.1:8000/train", {
+                method: "POST"
+            });
+
+            const trainData = await trainRes.json();
+            console.log("TRAIN RESPONSE:", trainData);
+
+            if (trainData.ok) {
+                footerActionDescription.textContent =
+                    `Training done | Accuracy: ${(trainData.accuracy * 100).toFixed(2)}%`;
+            } else {
+                footerActionDescription.textContent =
+                    `Training failed: ${trainData.message}`;
+            }
+
+            currentTrainingLabelIndex = 0;
+        } else {
+            footerActionDescription.textContent =
+                `Next label: ${labels[currentTrainingLabelIndex]}. Click Train when ready.`;
+        }
+
+    } catch (error) {
+        console.error("Commit error:", error);
+        footerActionDescription.textContent = "Save failed.";
+    }
 });
 

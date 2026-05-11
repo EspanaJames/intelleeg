@@ -34,17 +34,21 @@ SAMPLE_RATE = 100          # Your Pico should send around 100 samples/sec
 WINDOW_SECONDS = 2.0
 WINDOW_SIZE = int(SAMPLE_RATE * WINDOW_SECONDS)
 
-CHANNELS = ["Cz", "C4"]
+CHANNELS = ["Cz", "C3"]
 
 CLASSES = [
     "rest",
     "hand_clench",
-    "hand_unclench",
     "arm_raised",
-    "arm_unraised",
-    "elbow_raised",
-    "elbow_unraised"
+    "elbow_raised"
 ]
+
+preview_rows = []
+preview_label = None
+
+last_non_rest_label = "rest"
+last_change_time = time.time()
+STUCK_TIMEOUT = 5.0  # seconds
 
 NUM_CLASSES = len(CLASSES)
 CLASS_TO_ID = {name: i for i, name in enumerate(CLASSES)}
@@ -52,8 +56,8 @@ ID_TO_CLASS = {i: name for name, i in CLASS_TO_ID.items()}
 
 DATA_DIR = r"C:\Users\James\EEG_TRAINING_DATA"
 MODEL_DIR = r"C:\Users\James\EEG_TRAINING_MODELS"
-CSV_PATH = os.path.join(DATA_DIR, "user_training_data.csv")
-MODEL_PATH = os.path.join(MODEL_DIR, "eegnet_user_model.pt")
+CSV_PATH = os.path.join(DATA_DIR, "user_training_data4.csv")
+MODEL_PATH = os.path.join(MODEL_DIR, "eegnet_user_model4.pt")
 
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(MODEL_DIR, exist_ok=True)
@@ -79,12 +83,12 @@ serial_running = False
 
 latest_sample = {
     "cz": 0.0,
-    "c4": 0.0,
+    "c3": 0.0,
     "timestamp": time.time()
 }
 
 buffer_cz = deque(maxlen=WINDOW_SIZE)
-buffer_c4 = deque(maxlen=WINDOW_SIZE)
+buffer_c3 = deque(maxlen=WINDOW_SIZE)
 
 recording = False
 recording_label = "rest"
@@ -124,8 +128,8 @@ def parse_eeg_line(line: str):
 
     try:
         cz = float(parts[0])
-        c4 = float(parts[1])
-        return cz, c4
+        c3 = float(parts[1])
+        return cz, c3
     except ValueError:
         return None
 
@@ -140,11 +144,11 @@ def bandpass_filter(data, fs=SAMPLE_RATE, low=8, high=30):
     return sosfiltfilt(sos, data)
 
 
-def preprocess_window(cz_data, c4_data):
+def preprocess_window(cz_data, c3_data):
     cz = bandpass_filter(cz_data)
-    c4 = bandpass_filter(c4_data)
+    c3 = bandpass_filter(c3_data)
 
-    x = np.stack([cz, c4], axis=0)
+    x = np.stack([cz, c3], axis=0)
 
     mean = x.mean(axis=1, keepdims=True)
     std = x.std(axis=1, keepdims=True) + 1e-6
@@ -153,14 +157,35 @@ def preprocess_window(cz_data, c4_data):
     return x.astype(np.float32)
 
 
+def show_raw_window_changes(raw_window):
+    raw_std = np.std(raw_window)
+    raw_min = np.min(raw_window)
+    raw_max = np.max(raw_window)
+    raw_range = raw_max - raw_min
+
+    print(
+        "RAW STD:", raw_std,
+        "RAW RANGE:", raw_range,
+        "MIN:", raw_min,
+        "MAX:", raw_max
+    )
+
+
 def get_current_window():
-    if len(buffer_cz) < WINDOW_SIZE or len(buffer_c4) < WINDOW_SIZE:
+    if len(buffer_cz) < WINDOW_SIZE or len(buffer_c3) < WINDOW_SIZE:
         return None
 
     cz = np.array(buffer_cz, dtype=np.float32)
-    c4 = np.array(buffer_c4, dtype=np.float32)
+    c3 = np.array(buffer_c3, dtype=np.float32)
 
-    return preprocess_window(cz, c4)
+    raw_window = np.stack([cz, c3], axis=0)
+
+    # This only prints raw signal changes.
+    # It does NOT change what the user sees.
+    # It does NOT block prediction.
+    show_raw_window_changes(raw_window)
+
+    return preprocess_window(cz, c3)
 
 
 def movement_from_label(label):
@@ -171,12 +196,6 @@ def movement_from_label(label):
             "elbow": "default"
         }
 
-    if label == "hand_unclench":
-        return {
-            "hand": "unclench",
-            "arm": "default",
-            "elbow": "default"
-        }
 
     if label == "arm_raised":
         return {
@@ -185,12 +204,6 @@ def movement_from_label(label):
             "elbow": "default"
         }
 
-    if label == "arm_unraised":
-        return {
-            "hand": "default",
-            "arm": "unraised",
-            "elbow": "default"
-        }
 
     if label == "elbow_raised":
         return {
@@ -199,12 +212,6 @@ def movement_from_label(label):
             "elbow": "raised"
         }
 
-    if label == "elbow_unraised":
-        return {
-            "hand": "default",
-            "arm": "default",
-            "elbow": "unraised"
-        }
 
     return {
         "hand": "default",
@@ -316,9 +323,7 @@ def serial_reader_loop(port_name):
             raw = serial_port.readline()
 
             if not raw:
-                print("⚠️ Pico disconnected (no data)")
-                serial_running = False
-                break
+                continue
 
             try:
                 raw = raw.decode(errors="ignore")
@@ -329,25 +334,28 @@ def serial_reader_loop(port_name):
 
             if parsed is None:
                 continue
-            cz, c4 = parsed
+            cz, c3 = parsed
             now = time.time()
 
             latest_sample = {
                 "cz": cz,
-                "c4": c4,
+                "c3": c3,
                 "timestamp": now
             }
 
             buffer_cz.append(cz)
-            buffer_c4.append(c4)
+            buffer_c3.append(c3)
 
             if recording:
                 recording_rows.append({
                     "timestamp": now,
                     "cz": cz,
-                    "c4": c4,
+                    "c3": c3,
                     "label": recording_label
                 })
+
+                if len(recording_rows) % 100 == 0:
+                    print("Recording rows:", len(recording_rows), "Label:", recording_label)
 
         except Exception as e:
             print(f"Serial read error: {e}")
@@ -379,7 +387,7 @@ def make_windows_from_csv(csv_path):
             continue
 
         cz_values = class_df["cz"].values.astype(np.float32)
-        c4_values = class_df["c4"].values.astype(np.float32)
+        c3_values = class_df["c3"].values.astype(np.float32)
 
         step = WINDOW_SIZE // 2
 
@@ -387,9 +395,9 @@ def make_windows_from_csv(csv_path):
             end = start + WINDOW_SIZE
 
             cz_window = cz_values[start:end]
-            c4_window = c4_values[start:end]
+            c3_window = c3_values[start:end]
 
-            window = preprocess_window(cz_window, c4_window)
+            window = preprocess_window(cz_window, c3_window)
             X.append(window)
             y.append(CLASS_TO_ID[label])
 
@@ -510,6 +518,19 @@ def train_user_model(epochs=40, batch_size=16, learning_rate=0.001):
         "report": report
     }
 
+def eeg_signal_is_valid(window):
+    eeg_std = np.std(window)
+    eeg_peak = np.max(np.abs(window))
+
+    print("STD:", eeg_std, "PEAK:", eeg_peak)
+
+    if eeg_std < 0.001:
+        return False
+
+    if eeg_peak > 100000:
+        return False
+
+    return True
 
 def predict_current_window():
     if not model_ready or model is None:
@@ -530,6 +551,7 @@ def predict_current_window():
             "movement": movement_from_label("rest")
         }
 
+
     x = torch.tensor(window[np.newaxis, np.newaxis, :, :], dtype=torch.float32)
 
     model.eval()
@@ -538,18 +560,37 @@ def predict_current_window():
         logits = model(x)
         probs = torch.softmax(logits, dim=1).numpy()[0]
 
+    global last_non_rest_label, last_change_time
+
     class_id = int(np.argmax(probs))
     confidence = float(probs[class_id])
     label = ID_TO_CLASS[class_id]
 
-    if confidence < 0.45:
+    # Make this higher so weak predictions become rest
+    if confidence < 0.50:
         label = "rest"
 
+    current_time = time.time()
+
+    # If label changed → reset timer
+    if label != last_non_rest_label:
+        last_non_rest_label = label
+        last_change_time = current_time
+
+    # If stuck in non-rest too long → force rest
+    if label != "rest":
+        if current_time - last_change_time > STUCK_TIMEOUT:
+            label = "rest"
+
     return {
-        "ready": True,
-        "label": label,
-        "confidence": confidence,
-        "movement": movement_from_label(label)
+    "ready": True,
+    "label": label,
+    "confidence": confidence,
+    "probs": {
+        ID_TO_CLASS[i]: float(probs[i])
+        for i in range(len(probs))
+    },
+    "movement": movement_from_label(label)
     }
 
 
@@ -652,7 +693,7 @@ def get_latest():
 @app.post("/record/start")
 def start_record(label: str):
     global recording, recording_label, recording_rows
-
+    print("START RECORD:", label)
     if label not in CLASSES:
         return {
             "ok": False,
@@ -671,7 +712,7 @@ def start_record(label: str):
 
 @app.post("/record/stop")
 def stop_record():
-    global recording, recording_rows
+    global recording, recording_rows, preview_rows, preview_label
 
     recording = False
 
@@ -681,7 +722,30 @@ def stop_record():
             "message": "No data recorded."
         }
 
-    new_df = pd.DataFrame(recording_rows)
+    preview_rows = recording_rows.copy()
+    preview_label = recording_label
+    count = len(preview_rows)
+
+    recording_rows = []
+
+    return {
+        "ok": True,
+        "message": f"Preview ready for {preview_label}. Not saved yet.",
+        "label": preview_label,
+        "samples": count
+    }
+
+@app.post("/record/commit")
+def commit_preview():
+    global preview_rows, preview_label
+
+    if len(preview_rows) == 0:
+        return {
+            "ok": False,
+            "message": "No preview data to save."
+        }
+
+    new_df = pd.DataFrame(preview_rows)
 
     if os.path.exists(CSV_PATH):
         old_df = pd.read_csv(CSV_PATH)
@@ -691,13 +755,30 @@ def stop_record():
 
     final_df.to_csv(CSV_PATH, index=False)
 
-    count = len(recording_rows)
-    recording_rows = []
+    count = len(preview_rows)
+    saved_label = preview_label
+
+    preview_rows = []
+    preview_label = None
 
     return {
         "ok": True,
-        "message": f"Saved {count} samples to {CSV_PATH}",
+        "message": f"Saved {count} samples as {saved_label}",
+        "label": saved_label,
+        "samples": count,
         "csv_path": CSV_PATH
+    }
+
+@app.post("/record/discard")
+def discard_preview():
+    global preview_rows, preview_label
+
+    preview_rows = []
+    preview_label = None
+
+    return {
+        "ok": True,
+        "message": "Preview data discarded."
     }
 
 
